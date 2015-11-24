@@ -12,10 +12,11 @@ object Highlander extends js.JSApp {
   // the url used when a tab is first open, before the url has been set
   val NewTab = "chrome://newtab/"
 
-  def checkForExistingTab(url: String): Future[Option[Tab]] = {
+  def checkForExistingTab(id: Tab.Id, url: String): Future[Option[Tab]] = {
     Tabs.query(TabQuery(url = url: js.Any)).flatMap { tabs =>
       if (tabs.size > 1) {
-        val ids = tabs.tail.flatMap(_.id.toOption)
+        // take a tab, where that tab is not the newly opened one
+        val ids = (tabs.flatMap(_.id.toOption) - id).tail :+ id
         Tabs.remove(ids).flatMap { _ =>
           Tabs.update(tabs.head.id, UpdateProperties(active = true))
             .map(_.toOption)
@@ -27,7 +28,7 @@ object Highlander extends js.JSApp {
   def main(): Unit = {
     Tabs.onUpdated.listen { case (id: Tab.Id, changeInfo: ChangeInfo, tab: Tab) =>
       changeInfo.url.filterNot(_ == NewTab)
-        .foreach(checkForExistingTab)
+        .foreach(checkForExistingTab(id, _))
     }
   }
 }
