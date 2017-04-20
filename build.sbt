@@ -1,34 +1,34 @@
-import chrome.permissions.APIPermission
+import chrome.permissions.Permission
 import chrome._
-import Impl._
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 val highlander = project.in(file("."))
   .enablePlugins(ScalaJSPlugin, ChromeSbtPlugin)
   .settings(
+    name := "Highlander",
+    version := "0.1.0",
     scalaJSStage in Global := FastOptStage,
     emitSourceMaps in fullOptJS := true,
     persistLauncher := true,
-    chromeManifest := ExtensionManifest(
-      name = "Highlander",
-      version = "0.1.0",
-      manifestVersion = 2,
-      background = Background(List(
-        "deps.js",
+    //scalaJSUseMainModuleInitializer := true,
+    chromeManifest := new ExtensionManifest {
+      val name = Keys.name.value
+      val version = Keys.version.value
+      override val manifestVersion = 2
+      val background = Background(List(
+        "dependencies.js",
         "main.js",
         "launcher.js"
-      )),
-      shortName = None,
-      defaultLocale = None,
-      description = None,
-      offlineEnabled = true,
-      permissions = Set(APIPermission.Tabs),
-      icons = Map.empty,
-      minimumChromeVersion = Some("23")
-    ),
+      ))
+      override val permissions = Set[Permission](
+        Permission.API.Tabs,
+        Permission.API.Notifications
+      )
+      override val minimumChromeVersion = Some("23")
+    },
     libraryDependencies ++= Seq(
-    "net.lullabyte" %%% "scala-js-chrome" % "0.2.0"
+    "net.lullabyte" %%% "scala-js-chrome" % "0.4.0"
     )
   )
 
