@@ -78,8 +78,8 @@ object Highlander extends js.JSApp {
           case (DuplicateTabID, 0) =>
             for {
               _ <- Notifications.clear(DuplicateTabID)
-              _ <- focusTab(first)
               _ <- Tabs.remove(ids)
+              _ <- focusTab(first)
             } yield ()
           case (DuplicateTabID, 1) =>
             Notifications.clear(DuplicateTabID)
